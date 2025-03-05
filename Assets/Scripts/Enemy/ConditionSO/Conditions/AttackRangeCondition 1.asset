@@ -9,8 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c27b62ebe7616bb45a58fe4403a10f42, type: 3}
-  m_Name: DieState
+  m_Script: {fileID: 11500000, guid: 395e2edb9ca528247b946395b513c2ff, type: 3}
+  m_Name: AttackRangeCondition 1
   m_EditorClassIdentifier: 
-  StartCondition: {fileID: 11400000, guid: 4b86771980c232c42b0907ea893b1046, type: 2}
-  EndConditions: []
+  answer: 0

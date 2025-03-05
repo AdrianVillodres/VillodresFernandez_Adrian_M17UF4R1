@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 [CreateAssetMenu(fileName = "RunState", menuName = "StatesSO/Run")]
-public class RunState : StatesSO<EnemyIA>
+public class RunState : StatesSO
 {
     private Animator animator;
     public override void OnStateEnter(EnemyIA ec)

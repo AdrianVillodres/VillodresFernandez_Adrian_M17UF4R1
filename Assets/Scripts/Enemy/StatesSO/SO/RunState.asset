@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c76ac732af882ef40b25da22cb842dd3, type: 3}
   m_Name: RunState
   m_EditorClassIdentifier: 
-  StatesToGo:
-  - {fileID: 11400000, guid: 7eea54fd6c31c3d4984ebed5132701fd, type: 2}
-  - {fileID: 11400000, guid: b6301cb2ccff3084288bb8760bb25209, type: 2}
+  StartCondition: {fileID: 11400000, guid: 563fa3c11bebdb7419e9fa843c5eb65e, type: 2}
+  EndConditions:
+  - {fileID: 11400000, guid: 4b86771980c232c42b0907ea893b1046, type: 2}

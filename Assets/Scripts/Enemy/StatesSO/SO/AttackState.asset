@@ -9,12 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c5fc58eee85c4048b1f9f3018b31b79, type: 3}
-  m_Name: ChaseState
+  m_Script: {fileID: 11500000, guid: 80de1f16d96af3f419d1b718ca738d80, type: 3}
+  m_Name: AttackState
   m_EditorClassIdentifier: 
-  StartCondition: {fileID: 11400000, guid: 39f0613a60298f74e89fa608ae4033cb, type: 2}
+  StartCondition: {fileID: 11400000, guid: 3d5b76cbfad952a49a031b6ddc245387, type: 2}
   EndConditions:
+  - {fileID: 11400000, guid: db29b4900bb0f39499d41e70b3af32bc, type: 2}
   - {fileID: 11400000, guid: 563fa3c11bebdb7419e9fa843c5eb65e, type: 2}
-  - {fileID: 11400000, guid: 3d5b76cbfad952a49a031b6ddc245387, type: 2}
   - {fileID: 11400000, guid: 4b86771980c232c42b0907ea893b1046, type: 2}
-  - {fileID: 11400000, guid: e7f7c52c38dfcd7439c8e871d0f43261, type: 2}
