@@ -4,7 +4,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "IdleState", menuName = "StatesSO/Idle")]
 public class IdleState : StatesSO
 {
-    private Animator animator;
     public override void OnStateEnter(EnemyIA ec)
     {
     }
@@ -15,5 +14,6 @@ public class IdleState : StatesSO
 
     public override void OnStateUpdate(EnemyIA ec)
     {
+        Debug.Log("The chilling");
     }
 }

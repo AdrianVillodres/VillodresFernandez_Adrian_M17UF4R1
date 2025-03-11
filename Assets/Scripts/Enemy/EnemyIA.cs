@@ -7,8 +7,8 @@ using UnityEngine.InputSystem;
 public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
 {
     private Inputs enemyInputs;
-    private Rigidbody rb;
     public NavMeshAgent agent;
+    public GameObject target;
     public int HP;
     public int LostHP;
     public bool chase;
@@ -22,52 +22,76 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         enemyInputs = new Inputs();
         enemyInputs.Enemy.SetCallbacks(this);
         agent = GetComponent<NavMeshAgent>();
-        rb = GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnTriggerEnter(Collider collision)
     {
-        if(HP <= 0)
-        {
-            Destroy(gameObject);
-        } 
-    }
-    private void OnEnable()
-    {
-        enemyInputs.Enable();
-    }
-
-    private void OnDisable()
-    {
-        enemyInputs.Disable();
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        agent.SetDestination(GameObject.Find("Player").transform.position);
         chase = true;
+        target = collision.gameObject;
+        CheckEndingConditions();
     }
-
-    private void OnTriggerExit(Collider other)
+    private void OnTriggerExit(Collider collision)
     {
         chase = false;
+        CheckEndingConditions();
     }
-
     private void OnCollisionEnter(Collision collision)
     {
         attack = true;
+        CheckEndingConditions();
     }
-
     private void OnCollisionExit(Collision collision)
     {
         attack = false;
+        CheckEndingConditions();
+    }
+    private void Update()
+    {
+        CheckEndingConditions();
+        currentNode.OnStateUpdate(this);
+    }
+    public void CheckEndingConditions()
+    {
+        foreach (ConditionSO condition in currentNode.EndConditions)
+            if (condition.CheckCondition(this) == condition.answer) ExitCurrentNode();
+    }
+    public void ExitCurrentNode()
+    {
+        foreach (StatesSO statesSO in nodes)
+        {
+            if (statesSO.StartCondition == null)
+            {
+                EnterNewState(statesSO);
+                break;
+            }
+            else
+            {
+                if (statesSO.StartCondition.CheckCondition(this) == statesSO.StartCondition.answer)
+                {
+                    EnterNewState(statesSO);
+                    break;
+                }
+            }
+        }
+        currentNode.OnStateEnter(this);
+    }
+    private void EnterNewState(StatesSO state)
+    {
+        currentNode.OnStateExit(this);
+        currentNode = state;
+        currentNode.OnStateEnter(this);
     }
     public void OnDealDamageToEnemy(InputAction.CallbackContext context)
     {
         if(context.performed)
         {
             HP--;
+            if (HP <= 0)
+            {
+                LostHP = 0;
+                ExitCurrentNode();
+            }
+            CheckEndingConditions();
             Debug.Log("Deal Damage to Enemy");
         }
         

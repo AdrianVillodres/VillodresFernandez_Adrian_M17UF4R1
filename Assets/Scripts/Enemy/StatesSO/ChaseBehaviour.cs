@@ -1,18 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class ChaseBehaviour : MonoBehaviour
 {
     public float Speed;
-    private Rigidbody2D _rb;
+    private NavMeshAgent agent;
+    private Rigidbody _rb;
     private void Awake()
     {
-        _rb = GetComponent<Rigidbody2D>();
+        agent = GetComponent<NavMeshAgent>();
+        _rb = GetComponent<Rigidbody>();
+        agent.speed = Speed;
     }
-    public void Chase(Transform target, Transform self)
+    public void Chase(Transform target)
     {
-        _rb.velocity = (target.position - self.position).normalized * Speed;
+        agent.SetDestination(target.position);
     }
     public void Run(Transform target, Transform self)
     {
@@ -21,6 +25,7 @@ public class ChaseBehaviour : MonoBehaviour
 
     public void StopChasing()
     {
-        _rb.velocity = Vector2.zero;
+        agent.ResetPath();
+        _rb.velocity = Vector3.zero;
     }
 }

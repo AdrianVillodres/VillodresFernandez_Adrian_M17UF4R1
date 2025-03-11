@@ -11,6 +11,7 @@ public class MainCharacter : MonoBehaviour, Inputs.IPlayerActions
     public Vector3 ipMove;
     private Rigidbody rb;
     private MainCharacter character;
+    [SerializeField]
     private int speed = 1;
     // Start is called before the first frame update
     void Awake()

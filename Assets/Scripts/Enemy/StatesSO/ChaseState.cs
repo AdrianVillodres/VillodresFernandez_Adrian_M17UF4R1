@@ -15,6 +15,6 @@ public class ChaseState : StatesSO
 
     public override void OnStateUpdate(EnemyIA ec)
     {
-        ec.GetComponent<ChaseBehaviour>().Chase(ec.transform, ec.transform);
+        ec.GetComponent<ChaseBehaviour>().Chase(ec.target.transform);
     }
 }
