@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-[CreateAssetMenu(fileName = "ChaseState", menuName = "StatesSO/Chase")]
-public class ChaseState : StateSO
+[CreateAssetMenu(fileName = "RunState", menuName = "StatesSO/Run")]
+public class RunState : StateSO
 {
     public override void OnStateEnter(EnemyIA ec)
     {
@@ -15,6 +15,7 @@ public class ChaseState : StateSO
 
     public override void OnStateUpdate(EnemyIA ec)
     {
-        ec.GetComponent<ChaseBehaviour>().Chase(ec.target.transform);
+        Debug.Log("CoSorro");
+        ec.GetComponent<ChaseBehaviour>().Run(ec.target.transform, ec.transform);
     }
 }
