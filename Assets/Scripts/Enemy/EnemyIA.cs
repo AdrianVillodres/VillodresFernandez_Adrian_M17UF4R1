@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.InputSystem;
 
 public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
@@ -16,21 +17,23 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
     public int LostHP;
 
     [Header("Patrol System")]
-    public Transform mainPoint;        // Punto principal del patrón de patrulla
-    public Transform[] patrolPoints;   // Puntos de patrulla secundarios
-    public float patrolSpeed = 3f;     // Velocidad de patrulla
-    public float chaseSpeed = 5f;      // Velocidad al perseguir
-    public float visionRange = 10f;    // Rango de visión
-    public float stopChaseTime = 3f;   // Tiempo antes de volver a patrullar
+    public Transform mainPoint;
+    public Transform[] patrolPoints;
+    public float stopChaseTime = 3f;
     private int currentPatrolIndex = 0;
     private bool lostPlayer = false;
     private Vector3 lastSeenPosition;
     private float lostPlayerTimer = 0;
 
+    private ChaseBehaviour chaseBehaviour;
+    private NavMeshAgent agent;
+
     void Awake()
     {
         enemyInputs = new Inputs();
         enemyInputs.Enemy.SetCallbacks(this);
+        chaseBehaviour = GetComponent<ChaseBehaviour>();
+        agent = GetComponent<NavMeshAgent>();
     }
 
     private void OnEnable()
@@ -47,7 +50,7 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
     {
         if (chase && target != null)
         {
-            ChasePlayer();
+            chaseBehaviour.Chase(target.transform);
         }
         else if (lostPlayer)
         {
@@ -57,6 +60,10 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
                 MovePatrolArea(lastSeenPosition);
                 lostPlayer = false;
                 lostPlayerTimer = 0;
+            }
+            else
+            {
+                chaseBehaviour.Chase(mainPoint);
             }
         }
         else
@@ -84,7 +91,10 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         if (collision.gameObject.CompareTag("Player"))
         {
             chase = false;
-            lastSeenPosition = target.transform.position;
+            if (target != null)
+            {
+                lastSeenPosition = target.transform.position;
+            }
             lostPlayer = true;
         }
         CheckEndingConditions();
@@ -93,14 +103,18 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Player"))
+        {
             attack = true;
+        }
         CheckEndingConditions();
     }
 
     private void OnCollisionExit(Collision collision)
     {
         if (collision.gameObject.CompareTag("Player"))
+        {
             attack = false;
+        }
         CheckEndingConditions();
     }
 
@@ -108,32 +122,54 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
     {
         if (patrolPoints.Length == 0) return;
 
-        transform.position = Vector3.MoveTowards(transform.position, patrolPoints[currentPatrolIndex].position, patrolSpeed * Time.deltaTime);
+        chaseBehaviour.Chase(patrolPoints[currentPatrolIndex]);
 
-        if (Vector3.Distance(transform.position, patrolPoints[currentPatrolIndex].position) < 0.2f)
+        if (Vector3.Distance(transform.position, patrolPoints[currentPatrolIndex].position) < 0.5f)
         {
             currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length;
         }
     }
 
-    private void ChasePlayer()
-    {
-        if (target != null)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, target.transform.position, chaseSpeed * Time.deltaTime);
-        }
-    }
-
     private void MovePatrolArea(Vector3 newPosition)
     {
+        if (HP >= 5) return;
+
+        // Calcular el desplazamiento entre la nueva posición y la posición actual del mainPoint
         Vector3 offset = newPosition - mainPoint.position;
+
+        // Mover el mainPoint a la nueva posición
         mainPoint.position = newPosition;
 
-        for (int i = 0; i < patrolPoints.Length; i++)
+        // Mover el primer punto de patrullaje (patrolPoints[0]) para que se sincronice con el mainPoint
+        if (patrolPoints.Length > 0)
         {
-            patrolPoints[i].position += offset;
+            patrolPoints[0].position = mainPoint.position;
+        }
+
+        // Mover los otros puntos de patrullaje con el mismo offset
+        for (int i = 1; i < patrolPoints.Length; i++)
+        {
+            // Desplazar el punto en X y Z
+            Vector3 patrolPosition = patrolPoints[i].position + offset;
+
+            // Ajustar la altura del punto para que no se hunda en el suelo (asegurarse de que está sobre el NavMesh)
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(patrolPosition, out hit, 1.0f, NavMesh.AllAreas))
+            {
+                // Ajustar la altura a la posición del NavMesh
+                patrolPoints[i].position = new Vector3(patrolPosition.x, hit.position.y, patrolPosition.z);
+            }
+            else
+            {
+                // Si no está en el NavMesh, moverlo a una posición válida sobre el NavMesh
+                patrolPoints[i].position = new Vector3(patrolPosition.x, patrolPoints[i].position.y, patrolPosition.z);
+            }
         }
     }
+
+
+
+
 
     public void CheckEndingConditions()
     {
@@ -150,12 +186,8 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
     {
         foreach (StateSO stateSO in Nodes)
         {
-            if (stateSO.StartCondition == null)
-            {
-                EnterNewState(stateSO);
-                break;
-            }
-            else if (stateSO.StartCondition.CheckCondition(this) == stateSO.StartCondition.answer)
+            if (stateSO.StartCondition == null ||
+                stateSO.StartCondition.CheckCondition(this) == stateSO.StartCondition.answer)
             {
                 EnterNewState(stateSO);
                 break;
