@@ -130,45 +130,70 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         }
     }
 
-    private void MovePatrolArea(Vector3 newPosition)
+
+
+    private void MovePatrolArea(Vector3 lastSeenPosition)
     {
         if (HP >= 5) return;
 
-        // Calcular el desplazamiento entre la nueva posición y la posición actual del mainPoint
-        Vector3 offset = newPosition - mainPoint.position;
-
-        // Mover el mainPoint a la nueva posición
-        mainPoint.position = newPosition;
-
-        // Mover el primer punto de patrullaje (patrolPoints[0]) para que se sincronice con el mainPoint
-        if (patrolPoints.Length > 0)
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        if (agent != null)
         {
-            patrolPoints[0].position = mainPoint.position;
+            agent.isStopped = true;
+            agent.ResetPath();
+            agent.enabled = false; 
         }
 
-        // Mover los otros puntos de patrullaje con el mismo offset
-        for (int i = 1; i < patrolPoints.Length; i++)
+        if (!NavMesh.SamplePosition(lastSeenPosition, out NavMeshHit mainHit, 2.0f, NavMesh.AllAreas))
         {
-            // Desplazar el punto en X y Z
-            Vector3 patrolPosition = patrolPoints[i].position + offset;
+            Debug.LogWarning("No se encontró una posición válida en el NavMesh para el mainPoint.");
+            return;
+        }
 
-            // Ajustar la altura del punto para que no se hunda en el suelo (asegurarse de que está sobre el NavMesh)
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(patrolPosition, out hit, 1.0f, NavMesh.AllAreas))
+        mainPoint.position = new Vector3(mainHit.position.x, mainPoint.position.y, mainHit.position.z);
+        int mainArea = mainHit.mask;
+
+        Vector3 offset = new Vector3(mainPoint.position.x - lastSeenPosition.x, 0, mainPoint.position.z - lastSeenPosition.z);
+
+        for (int i = 0; i < patrolPoints.Length; i++)
+        {
+            Vector3 patrolPosition = patrolPoints[i].position + offset;
+            float originalHeight = patrolPoints[i].position.y;
+
+            if (NavMesh.SamplePosition(patrolPosition, out NavMeshHit hit, 2.0f, NavMesh.AllAreas))
             {
-                // Ajustar la altura a la posición del NavMesh
-                patrolPoints[i].position = new Vector3(patrolPosition.x, hit.position.y, patrolPosition.z);
+                if (hit.mask == mainArea)
+                {
+                    patrolPoints[i].position = new Vector3(hit.position.x, originalHeight, hit.position.z);
+                }
+                else
+                {
+                    Vector3 randomOffset = new Vector3(UnityEngine.Random.Range(-1f, 1f), 0, UnityEngine.Random.Range(-1f, 1f));
+                    Vector3 newPatrolPos = mainPoint.position + randomOffset;
+
+                    if (NavMesh.SamplePosition(newPatrolPos, out NavMeshHit newHit, 2.0f, NavMesh.AllAreas))
+                    {
+                        patrolPoints[i].position = new Vector3(newHit.position.x, originalHeight, newHit.position.z);
+                    }
+                    else
+                    {
+                        patrolPoints[i].position = new Vector3(mainPoint.position.x, originalHeight, mainPoint.position.z);
+                    }
+                }
             }
             else
             {
-                // Si no está en el NavMesh, moverlo a una posición válida sobre el NavMesh
-                patrolPoints[i].position = new Vector3(patrolPosition.x, patrolPoints[i].position.y, patrolPosition.z);
+                patrolPoints[i].position = new Vector3(mainPoint.position.x, originalHeight, mainPoint.position.z);
             }
         }
+
+        if (agent != null)
+        {
+            agent.enabled = true;
+            agent.isStopped = false;
+            agent.SetDestination(patrolPoints[0].position);
+        }
     }
-
-
-
 
 
     public void CheckEndingConditions()
