@@ -19,7 +19,7 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
     [Header("Patrol System")]
     public Transform mainPoint;
     public Transform[] patrolPoints;
-    public float stopChaseTime = 3f;
+    public float stopChaseTime = 1f;
     private int currentPatrolIndex = 0;
     private bool lostPlayer = false;
     private Vector3 lastSeenPosition;
@@ -63,7 +63,8 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
             }
             else
             {
-                chaseBehaviour.Chase(mainPoint);
+                MovePatrolArea(lastSeenPosition);
+                Patrol();
             }
         }
         else
@@ -74,6 +75,7 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         CheckEndingConditions();
         currentNode.OnStateUpdate(this);
     }
+
 
     private void OnTriggerEnter(Collider collision)
     {
