@@ -3,11 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
 public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
 {
-    public int HP;
+    public int HP = 5;
     private Inputs enemyInputs;
     public GameObject target;
     public bool attack;
@@ -15,7 +16,7 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
     public StateSO currentNode;
     public List<StateSO> Nodes;
     public int LostHP;
-
+    public Slider Healthbar;
     [Header("Patrol System")]
     public Transform mainPoint;
     public Transform[] patrolPoints;
@@ -34,6 +35,8 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         enemyInputs.Enemy.SetCallbacks(this);
         chaseBehaviour = GetComponent<ChaseBehaviour>();
         agent = GetComponent<NavMeshAgent>();
+        Healthbar.maxValue = HP;
+        Healthbar.value = HP;
     }
 
     private void OnEnable()
@@ -75,7 +78,6 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         CheckEndingConditions();
         currentNode.OnStateUpdate(this);
     }
-
 
     private void OnTriggerEnter(Collider collision)
     {
@@ -132,8 +134,6 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         }
     }
 
-
-
     private void MovePatrolArea(Vector3 lastSeenPosition)
     {
         if (HP >= 5) return;
@@ -143,7 +143,7 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         {
             agent.isStopped = true;
             agent.ResetPath();
-            agent.enabled = false; 
+            agent.enabled = false;
         }
 
         if (!NavMesh.SamplePosition(lastSeenPosition, out NavMeshHit mainHit, 2.0f, NavMesh.AllAreas))
@@ -197,7 +197,6 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         }
     }
 
-
     public void CheckEndingConditions()
     {
         foreach (ConditionSO condition in currentNode.EndConditions)
@@ -240,6 +239,7 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
                 LostHP = 0;
                 ExitCurrentNode();
             }
+            Healthbar.value = HP;
             CheckEndingConditions();
             Debug.Log("Deal Damage to Enemy");
         }
