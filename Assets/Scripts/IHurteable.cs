@@ -1,4 +1,4 @@
 public interface IHurteable
 {
-    public abstract void Hurt(int damage);
+    void Hurt(int damage);
 }

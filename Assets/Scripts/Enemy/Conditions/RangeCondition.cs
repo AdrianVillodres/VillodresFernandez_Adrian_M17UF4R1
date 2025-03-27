@@ -6,7 +6,7 @@ public class RangeCondition : ConditionSO
 {
     public override bool CheckCondition(EnemyIA ec)
     {
-        return ec.chase;
+        return ec.GetComponent<EnemyVision>().PlayerInSight;
     }
 
 }

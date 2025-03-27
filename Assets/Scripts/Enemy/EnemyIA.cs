@@ -6,7 +6,7 @@ using UnityEngine.AI;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
-public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
+public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions, IHurteable
 {
     public int HP = 5;
     private Inputs enemyInputs;
@@ -79,13 +79,28 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         currentNode.OnStateUpdate(this);
     }
 
+    public void SeePlayer(GameObject player)
+    {
+        target = player;
+        chase = true;
+        lostPlayer = false;
+    }
+
+    public void LostPlayer()
+    {
+        chase = false;
+        if (target != null)
+        {
+            lastSeenPosition = target.transform.position;
+        }
+        lostPlayer = true;
+    }
+
     private void OnTriggerEnter(Collider collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            target = collision.gameObject;
-            chase = true;
-            lostPlayer = false;
+            SeePlayer(collision.gameObject);
         }
         CheckEndingConditions();
     }
@@ -94,12 +109,7 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            chase = false;
-            if (target != null)
-            {
-                lastSeenPosition = target.transform.position;
-            }
-            lostPlayer = true;
+            LostPlayer();
         }
         CheckEndingConditions();
     }
@@ -109,6 +119,11 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         if (collision.gameObject.CompareTag("Player"))
         {
             attack = true;
+            IHurteable hurteable = collision.gameObject.GetComponent<IHurteable>();
+            if (hurteable != null)
+            {
+                hurteable.Hurt(1);
+            }
         }
         CheckEndingConditions();
     }
@@ -207,6 +222,16 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
             }
         }
     }
+    public void Hurt(int damage)
+    {
+        HP -= damage;
+        if (HP <= 0)
+        {
+            HP = 0;
+            CheckEndingConditions();
+        }
+        Healthbar.value = HP;
+    }
 
     public void ExitCurrentNode()
     {
@@ -229,19 +254,4 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions
         currentNode.OnStateEnter(this);
     }
 
-    public void OnDealDamageToEnemy(InputAction.CallbackContext context)
-    {
-        if (context.performed)
-        {
-            HP--;
-            if (HP <= 0)
-            {
-                LostHP = 0;
-                ExitCurrentNode();
-            }
-            Healthbar.value = HP;
-            CheckEndingConditions();
-            Debug.Log("Deal Damage to Enemy");
-        }
-    }
 }

@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
-using UnityEngine.TextCore.Text;
 
-public class MainCharacter : MonoBehaviour, Inputs.IPlayerActions
+public class MainCharacter : MonoBehaviour, Inputs.IPlayerActions, IHurteable
 {
     private Inputs playerInputs;
-    public int HP = 5;
+    public int HP = 10;
     public Vector3 ipMove;
     private Rigidbody rb;
     private MainCharacter character;
     public Slider Healthbar;
     public int speed;
+    private bool attack;
+    private GameObject target;
 
     void Awake()
     {
@@ -55,7 +56,48 @@ public class MainCharacter : MonoBehaviour, Inputs.IPlayerActions
     public void TakeDamage(int damage)
     {
         HP -= damage;
-        if (HP < 0) HP = 0;
+        if (HP <= 0)
+        {
+            Destroy(gameObject);
+        }
         Healthbar.value = HP;
+    }
+
+    public void Hurt(int damage)
+    {
+        TakeDamage(damage);
+    }
+
+    public void OnDealDamage(InputAction.CallbackContext context)
+    {
+        if (context.performed && attack)
+        {
+            if (target != null)
+            {
+                IHurteable hurteable = target.GetComponent<IHurteable>();
+                if (hurteable != null)
+                {
+                    hurteable.Hurt(1);
+                }
+            }
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            attack = true;
+            target = collision.gameObject;
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            attack = false;
+            target = null;
+        }
     }
 }
