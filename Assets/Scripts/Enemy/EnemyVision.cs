@@ -59,7 +59,7 @@ public class EnemyVision : MonoBehaviour
                         playerInSight = true;
                         enemyIA.SeePlayer(player.gameObject);
                     }
-                    else
+                    else if (hit.transform.CompareTag("obstacle"))
                     {
                         if (playerInSight && CoroutineStopFollowing == null) CoroutineStopFollowing = StartCoroutine(StopFollowingPlayer());
                     }
@@ -74,9 +74,10 @@ public class EnemyVision : MonoBehaviour
         {
             if (playerInSight && CoroutineStopFollowing == null) CoroutineStopFollowing = StartCoroutine(StopFollowingPlayer());
         }
+
     }
 
-    void OnDrawGizmos()
+void OnDrawGizmos()
     {
         Gizmos.color = playerInSight ? Color.green : Color.red;
         Gizmos.DrawWireSphere(transform.position, visionRange);

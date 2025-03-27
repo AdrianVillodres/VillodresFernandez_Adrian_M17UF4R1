@@ -14,6 +14,7 @@ public class DieState : StateSO
 
     public override void OnStateUpdate(EnemyIA ec)
     {
+        Destroy(ec.gameObject);
         Debug.Log("Abandoné este mundo de miseria y desesperación");
     }
 }

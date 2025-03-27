@@ -163,7 +163,6 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions, IHurteable
 
         if (!NavMesh.SamplePosition(lastSeenPosition, out NavMeshHit mainHit, 2.0f, NavMesh.AllAreas))
         {
-            Debug.LogWarning("No se encontró una posición válida en el NavMesh para el mainPoint.");
             return;
         }
 
@@ -227,9 +226,9 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions, IHurteable
         HP -= damage;
         if (HP <= 0)
         {
-            HP = 0;
-            CheckEndingConditions();
+            HP = 0;    
         }
+        CheckEndingConditions();
         Healthbar.value = HP;
     }
 
