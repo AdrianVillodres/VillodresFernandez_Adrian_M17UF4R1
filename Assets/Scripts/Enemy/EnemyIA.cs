@@ -96,7 +96,7 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions, IHurteable
         lostPlayer = true;
     }
 
-    private void OnTriggerEnter(Collider collision)
+   /* private void OnTriggerEnter(Collider collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
@@ -112,7 +112,7 @@ public class EnemyIA : MonoBehaviour, Inputs.IEnemyActions, IHurteable
             LostPlayer();
         }
         CheckEndingConditions();
-    }
+    }*/
 
     private void OnCollisionEnter(Collision collision)
     {
